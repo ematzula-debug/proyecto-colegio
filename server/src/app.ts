@@ -1,0 +1,24 @@
+import express from "express";
+import cors from "cors";
+import healthRoutes from "./routes/health.routes";
+
+const app = express();
+
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+  }),
+);
+
+app.use(express.json());
+
+app.use("/api", healthRoutes);
+
+app.use((_req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Ruta no encontrada",
+  });
+});
+
+export default app;
