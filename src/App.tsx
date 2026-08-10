@@ -7,6 +7,7 @@ import { ModulePage } from "@/pages/ModulePage";
 import { ProtectedRoute } from "@/routes/ProtectedRoute";
 import { getStoredUser, logoutService } from "@/services/auth.service";
 import type { AuthUser } from "@/types/auth";
+import { StudentsPage } from "@/pages/StudentsPage";
 
 function App() {
   const [user, setUser] = useState<AuthUser | null>(getStoredUser());
@@ -43,15 +44,7 @@ function App() {
         >
           <Route path="/dashboard" element={<DashboardPage />} />
 
-          <Route
-            path="/alumnos"
-            element={
-              <ModulePage
-                title="Alumnos"
-                description="Administración de alumnos registrados en el colegio."
-              />
-            }
-          />
+          <Route path="/alumnos" element={<StudentsPage />} />
 
           <Route
             path="/profesores"
