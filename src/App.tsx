@@ -1,34 +1,26 @@
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useState } from "react";
+import { LoginPage } from "@/pages/LoginPage";
+import { HomePage } from "@/pages/HomePage";
+import { getStoredUser, logoutService } from "@/services/auth.service";
+import type { AuthUser } from "@/types/auth";
 
 function App() {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100 p-6">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Sistema Colegio</CardTitle>
-          <CardDescription>
-            Proyecto de Aseguramiento de la Calidad del Software
-          </CardDescription>
-        </CardHeader>
+  const [user, setUser] = useState<AuthUser | null>(getStoredUser());
 
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Entorno frontend configurado con React, Vite, Tailwind CSS y
-            shadcn/ui.
-          </p>
+  function handleLoginSuccess(userData: AuthUser) {
+    setUser(userData);
+  }
 
-          <Button className="w-full">Iniciar proyecto</Button>
-        </CardContent>
-      </Card>
-    </main>
-  );
+  function handleLogout() {
+    logoutService();
+    setUser(null);
+  }
+
+  if (!user) {
+    return <LoginPage onLoginSuccess={handleLoginSuccess} />;
+  }
+
+  return <HomePage user={user} onLogout={handleLogout} />;
 }
 
 export default App;
