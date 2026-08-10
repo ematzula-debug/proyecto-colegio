@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import healthRoutes from "./routes/health.routes";
+import authRoutes from "./routes/auth.routes";
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(
 app.use(express.json());
 
 app.use("/api", healthRoutes);
+app.use("/api", authRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({
