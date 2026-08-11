@@ -10,6 +10,7 @@ import {
   Users,
   UserRound,
   UserRoundCheck,
+  LinkIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { AuthUser } from "@/types/auth";
@@ -64,6 +65,11 @@ const menuItems = [
     title: "Notas",
     path: "/notas",
     icon: UserRound,
+  },
+  {
+    title: "Asignaciones",
+    path: "/asignaciones",
+    icon: LinkIcon,
   },
 ];
 

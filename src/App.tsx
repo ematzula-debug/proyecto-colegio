@@ -13,6 +13,7 @@ import { GuardiansPage } from "@/pages/GuardiansPage";
 import { GradesPage } from "@/pages/GradesPage";
 import { SectionsPage } from "@/pages/SectionsPage";
 import { SubjectsPage } from "@/pages/SubjectsPage";
+import { TeacherAssignmentsPage } from "@/pages/TeacherAssignmentsPage";
 
 function App() {
   const [user, setUser] = useState<AuthUser | null>(getStoredUser());
@@ -60,6 +61,8 @@ function App() {
           <Route path="/secciones" element={<SectionsPage />} />
 
           <Route path="/asignaturas" element={<SubjectsPage />} />
+
+          <Route path="/asignaciones" element={<TeacherAssignmentsPage />} />
 
           <Route
             path="/inscripciones"
