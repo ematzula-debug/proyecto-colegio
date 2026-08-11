@@ -9,6 +9,7 @@ import gradesRoutes from "./routes/grades.routes";
 import sectionsRoutes from "./routes/sections.routes";
 import subjectsRoutes from "./routes/subjects.routes";
 import teacherAssignmentsRoutes from "./routes/teacherAssignments.routes";
+import enrollmentsRoutes from "./routes/enrollments.routes";
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use("/api", gradesRoutes);
 app.use("/api", sectionsRoutes);
 app.use("/api", subjectsRoutes);
 app.use("/api", teacherAssignmentsRoutes);
+app.use("/api", enrollmentsRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({
