@@ -9,7 +9,9 @@ import { getStoredUser, logoutService } from "@/services/auth.service";
 import type { AuthUser } from "@/types/auth";
 import { StudentsPage } from "@/pages/StudentsPage";
 import { TeachersPage } from "@/pages/TeachersPage";
-import { GuardiansPage } from "./pages/GuardiansPage";
+import { GuardiansPage } from "@/pages/GuardiansPage";
+import { GradesPage } from "@/pages/GradesPage";
+import { SectionsPage } from "@/pages/SectionsPage";
 
 function App() {
   const [user, setUser] = useState<AuthUser | null>(getStoredUser());
@@ -52,25 +54,9 @@ function App() {
 
           <Route path="/encargados" element={<GuardiansPage />} />
 
-          <Route
-            path="/grados"
-            element={
-              <ModulePage
-                title="Grados"
-                description="Administración de grados académicos del colegio."
-              />
-            }
-          />
+          <Route path="/grados" element={<GradesPage />} />
 
-          <Route
-            path="/secciones"
-            element={
-              <ModulePage
-                title="Secciones"
-                description="Administración de secciones asociadas a cada grado."
-              />
-            }
-          />
+          <Route path="/secciones" element={<SectionsPage />} />
 
           <Route
             path="/asignaturas"
