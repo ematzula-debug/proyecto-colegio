@@ -1,6 +1,16 @@
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
 const TOKEN_KEY = "sistema_colegio_token";
+const USER_KEY = "sistema_colegio_user";
+
+function logoutByInvalidToken() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+
+  if (window.location.pathname !== "/login") {
+    window.location.href = "/login";
+  }
+}
 
 export async function apiRequest<T>(
   endpoint: string,
@@ -22,6 +32,13 @@ export async function apiRequest<T>(
   });
 
   const data = await response.json();
+
+  if (response.status === 401) {
+    logoutByInvalidToken();
+    throw new Error(
+      data.message || "Sesión expirada. Inicia sesión nuevamente.",
+    );
+  }
 
   if (!response.ok) {
     throw new Error(data.message || "Error en la solicitud");

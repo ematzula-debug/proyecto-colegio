@@ -7,6 +7,7 @@ import teachersRoutes from "./routes/teachers.routes";
 import guardiansRoutes from "./routes/guardians.routes";
 import gradesRoutes from "./routes/grades.routes";
 import sectionsRoutes from "./routes/sections.routes";
+import subjectsRoutes from "./routes/subjects.routes";
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use("/api", teachersRoutes);
 app.use("/api", guardiansRoutes);
 app.use("/api", gradesRoutes);
 app.use("/api", sectionsRoutes);
+app.use("/api", subjectsRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({

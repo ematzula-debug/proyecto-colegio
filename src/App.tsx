@@ -12,6 +12,7 @@ import { TeachersPage } from "@/pages/TeachersPage";
 import { GuardiansPage } from "@/pages/GuardiansPage";
 import { GradesPage } from "@/pages/GradesPage";
 import { SectionsPage } from "@/pages/SectionsPage";
+import { SubjectsPage } from "@/pages/SubjectsPage";
 
 function App() {
   const [user, setUser] = useState<AuthUser | null>(getStoredUser());
@@ -58,15 +59,7 @@ function App() {
 
           <Route path="/secciones" element={<SectionsPage />} />
 
-          <Route
-            path="/asignaturas"
-            element={
-              <ModulePage
-                title="Asignaturas"
-                description="Administración de cursos o materias por grado."
-              />
-            }
-          />
+          <Route path="/asignaturas" element={<SubjectsPage />} />
 
           <Route
             path="/inscripciones"
