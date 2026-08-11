@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/routes/ProtectedRoute";
 import { getStoredUser, logoutService } from "@/services/auth.service";
 import type { AuthUser } from "@/types/auth";
 import { StudentsPage } from "@/pages/StudentsPage";
+import { TeachersPage } from "@/pages/TeachersPage";
 
 function App() {
   const [user, setUser] = useState<AuthUser | null>(getStoredUser());
@@ -46,15 +47,7 @@ function App() {
 
           <Route path="/alumnos" element={<StudentsPage />} />
 
-          <Route
-            path="/profesores"
-            element={
-              <ModulePage
-                title="Profesores"
-                description="Administración de profesores y directores del colegio."
-              />
-            }
-          />
+          <Route path="/profesores" element={<TeachersPage />} />
 
           <Route
             path="/encargados"

@@ -3,6 +3,7 @@ import cors from "cors";
 import healthRoutes from "./routes/health.routes";
 import authRoutes from "./routes/auth.routes";
 import studentsRoutes from "./routes/students.routes";
+import teachersRoutes from "./routes/teachers.routes";
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use("/api", healthRoutes);
 app.use("/api", authRoutes);
 app.use("/api", studentsRoutes);
+app.use("/api", teachersRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({
