@@ -11,6 +11,7 @@ import subjectsRoutes from "./routes/subjects.routes";
 import teacherAssignmentsRoutes from "./routes/teacherAssignments.routes";
 import enrollmentsRoutes from "./routes/enrollments.routes";
 import notesRoutes from "./routes/notes.routes";
+import dashboardRoutes from "./routes/dashboard.routes";
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use("/api", subjectsRoutes);
 app.use("/api", teacherAssignmentsRoutes);
 app.use("/api", enrollmentsRoutes);
 app.use("/api", notesRoutes);
+app.use("/api", dashboardRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({
