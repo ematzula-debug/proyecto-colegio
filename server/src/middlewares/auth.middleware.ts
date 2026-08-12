@@ -1,7 +1,7 @@
-import { NextFunction, Request, Response } from "express";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
 
-interface TokenPayload extends JwtPayload {
+export interface AuthUserPayload {
   id: number;
   usuario: string;
   correo: string;
@@ -9,7 +9,7 @@ interface TokenPayload extends JwtPayload {
 }
 
 export interface AuthenticatedRequest extends Request {
-  user?: TokenPayload;
+  user?: AuthUserPayload;
 }
 
 export function authMiddleware(
@@ -17,26 +17,42 @@ export function authMiddleware(
   res: Response,
   next: NextFunction,
 ) {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({
-      success: false,
-      message: "Token de autorización no proporcionado.",
-    });
-  }
-
-  const token = authHeader.split(" ")[1];
-
   try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "secret",
-    ) as TokenPayload;
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      return res.status(401).json({
+        success: false,
+        message: "Token no proporcionado.",
+      });
+    }
+
+    const [type, token] = authHeader.split(" ");
+
+    if (type !== "Bearer" || !token) {
+      return res.status(401).json({
+        success: false,
+        message: "Formato de token inválido.",
+      });
+    }
+
+    const secret = process.env.JWT_SECRET;
+
+    if (!secret) {
+      return res.status(500).json({
+        success: false,
+        message: "JWT_SECRET no está configurado en el servidor.",
+      });
+    }
+
+    const decoded = jwt.verify(token, secret) as AuthUserPayload;
 
     req.user = decoded;
+
     next();
   } catch (error) {
+    console.error("Error al validar token:", error);
+
     return res.status(401).json({
       success: false,
       message: "Token inválido o expirado.",

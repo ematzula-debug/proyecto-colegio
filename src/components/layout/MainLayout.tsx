@@ -3,14 +3,14 @@ import {
   BookOpen,
   ClipboardList,
   GraduationCap,
-  Home,
   LogOut,
   NotebookPen,
   School,
   Users,
-  UserRound,
   UserRoundCheck,
   LinkIcon,
+  LayoutDashboard,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { AuthUser } from "@/types/auth";
@@ -24,56 +24,70 @@ const menuItems = [
   {
     title: "Dashboard",
     path: "/dashboard",
-    icon: Home,
+    icon: LayoutDashboard,
+    roles: ["ADMIN", "PROFESOR_DIRECTOR"],
   },
   {
     title: "Alumnos",
     path: "/alumnos",
     icon: GraduationCap,
+    roles: ["ADMIN", "PROFESOR_DIRECTOR"],
   },
   {
     title: "Profesores",
     path: "/profesores",
     icon: UserRoundCheck,
+    roles: ["ADMIN"],
   },
   {
     title: "Padres/Encargados",
     path: "/encargados",
     icon: Users,
+    roles: ["ADMIN"],
   },
   {
     title: "Grados",
     path: "/grados",
     icon: School,
+    roles: ["ADMIN", "PROFESOR_DIRECTOR"],
   },
   {
     title: "Secciones",
     path: "/secciones",
     icon: ClipboardList,
+    roles: ["ADMIN", "PROFESOR_DIRECTOR"],
   },
   {
     title: "Asignaturas",
     path: "/asignaturas",
     icon: BookOpen,
-  },
-  {
-    title: "Inscripciones",
-    path: "/inscripciones",
-    icon: NotebookPen,
-  },
-  {
-    title: "Notas",
-    path: "/notas",
-    icon: UserRound,
+    roles: ["ADMIN", "PROFESOR_DIRECTOR"],
   },
   {
     title: "Asignaciones",
     path: "/asignaciones",
     icon: LinkIcon,
+    roles: ["ADMIN", "PROFESOR_DIRECTOR"],
+  },
+  {
+    title: "Inscripciones",
+    path: "/inscripciones",
+    icon: NotebookPen,
+    roles: ["ADMIN", "PROFESOR_DIRECTOR"],
+  },
+  {
+    title: "Notas",
+    path: "/notas",
+    icon: FileText,
+    roles: ["ADMIN", "PROFESOR_DIRECTOR", "PADRE_ENCARGADO", "ALUMNO"],
   },
 ];
 
 export function MainLayout({ user, onLogout }: MainLayoutProps) {
+  const visibleMenuItems = menuItems.filter((item) =>
+    item.roles.includes(user.rol),
+  );
+
   return (
     <div className="flex min-h-screen bg-slate-100">
       <aside className="hidden w-72 border-r bg-white md:flex md:flex-col">
@@ -83,7 +97,7 @@ export function MainLayout({ user, onLogout }: MainLayoutProps) {
         </div>
 
         <nav className="flex-1 space-y-1 p-4">
-          {menuItems.map((item) => {
+          {visibleMenuItems.map((item) => {
             const Icon = item.icon;
 
             return (

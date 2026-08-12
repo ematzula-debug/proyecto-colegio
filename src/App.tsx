@@ -3,7 +3,6 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { LoginPage } from "@/pages/LoginPage";
-import { ModulePage } from "@/pages/ModulePage";
 import { ProtectedRoute } from "@/routes/ProtectedRoute";
 import { getStoredUser, logoutService } from "@/services/auth.service";
 import type { AuthUser } from "@/types/auth";
@@ -16,6 +15,7 @@ import { SubjectsPage } from "@/pages/SubjectsPage";
 import { TeacherAssignmentsPage } from "@/pages/TeacherAssignmentsPage";
 import { EnrollmentsPage } from "./pages/EnrollmentsPage";
 import { NotesPage } from "./pages/NotesPage";
+import { RoleRoute } from "./routes/RoleRoute";
 
 function App() {
   const [user, setUser] = useState<AuthUser | null>(getStoredUser());
@@ -50,25 +50,102 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route
+            path="/dashboard"
+            element={
+              <RoleRoute allowedRoles={["ADMIN", "PROFESOR_DIRECTOR"]}>
+                <DashboardPage />
+              </RoleRoute>
+            }
+          />
 
-          <Route path="/alumnos" element={<StudentsPage />} />
+          <Route
+            path="/alumnos"
+            element={
+              <RoleRoute allowedRoles={["ADMIN", "PROFESOR_DIRECTOR"]}>
+                <StudentsPage />
+              </RoleRoute>
+            }
+          />
 
-          <Route path="/profesores" element={<TeachersPage />} />
+          <Route
+            path="/profesores"
+            element={
+              <RoleRoute allowedRoles={["ADMIN"]}>
+                <TeachersPage />
+              </RoleRoute>
+            }
+          />
 
-          <Route path="/encargados" element={<GuardiansPage />} />
+          <Route
+            path="/encargados"
+            element={
+              <RoleRoute allowedRoles={["ADMIN"]}>
+                <GuardiansPage />
+              </RoleRoute>
+            }
+          />
 
-          <Route path="/grados" element={<GradesPage />} />
+          <Route
+            path="/grados"
+            element={
+              <RoleRoute allowedRoles={["ADMIN", "PROFESOR_DIRECTOR"]}>
+                <GradesPage />
+              </RoleRoute>
+            }
+          />
 
-          <Route path="/secciones" element={<SectionsPage />} />
+          <Route
+            path="/secciones"
+            element={
+              <RoleRoute allowedRoles={["ADMIN", "PROFESOR_DIRECTOR"]}>
+                <SectionsPage />
+              </RoleRoute>
+            }
+          />
 
-          <Route path="/asignaturas" element={<SubjectsPage />} />
+          <Route
+            path="/asignaturas"
+            element={
+              <RoleRoute allowedRoles={["ADMIN", "PROFESOR_DIRECTOR"]}>
+                <SubjectsPage />
+              </RoleRoute>
+            }
+          />
 
-          <Route path="/asignaciones" element={<TeacherAssignmentsPage />} />
+          <Route
+            path="/asignaciones"
+            element={
+              <RoleRoute allowedRoles={["ADMIN", "PROFESOR_DIRECTOR"]}>
+                <TeacherAssignmentsPage />
+              </RoleRoute>
+            }
+          />
 
-          <Route path="/inscripciones" element={<EnrollmentsPage />} />
+          <Route
+            path="/inscripciones"
+            element={
+              <RoleRoute allowedRoles={["ADMIN", "PROFESOR_DIRECTOR"]}>
+                <EnrollmentsPage />
+              </RoleRoute>
+            }
+          />
 
-          <Route path="/notas" element={<NotesPage />} />
+          <Route
+            path="/notas"
+            element={
+              <RoleRoute
+                allowedRoles={[
+                  "ADMIN",
+                  "PROFESOR_DIRECTOR",
+                  "PADRE_ENCARGADO",
+                  "ALUMNO",
+                ]}
+              >
+                <NotesPage />
+              </RoleRoute>
+            }
+          />
         </Route>
 
         <Route
