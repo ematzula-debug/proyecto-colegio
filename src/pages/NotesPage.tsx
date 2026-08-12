@@ -39,6 +39,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getStoredUser } from "@/services/auth.service";
 import { getEnrollmentsService } from "@/services/enrollments.service";
 import {
   annulNoteService,
@@ -74,6 +75,12 @@ export function NotesPage() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  const user = getStoredUser();
+  const userRole = user?.rol ?? "";
+
+  const canManageNotes =
+    userRole === "ADMIN" || userRole === "PROFESOR_DIRECTOR";
+
   const activeEnrollments = useMemo(
     () => enrollments.filter((enrollment) => enrollment.estado === "INSCRITO"),
     [enrollments],
@@ -105,18 +112,27 @@ export function NotesPage() {
 
     async function loadInitialData() {
       try {
-        const [notesData, enrollmentsData, assignmentsData] = await Promise.all(
-          [
-            getNotesService(),
-            getEnrollmentsService(),
-            getTeacherAssignmentsService(),
-          ],
-        );
+        if (canManageNotes) {
+          const [notesData, enrollmentsData, assignmentsData] =
+            await Promise.all([
+              getNotesService(),
+              getEnrollmentsService(),
+              getTeacherAssignmentsService(),
+            ]);
 
-        if (active) {
-          setNotes(notesData);
-          setEnrollments(enrollmentsData);
-          setAssignments(assignmentsData);
+          if (active) {
+            setNotes(notesData);
+            setEnrollments(enrollmentsData);
+            setAssignments(assignmentsData);
+          }
+        } else {
+          const notesData = await getNotesService();
+
+          if (active) {
+            setNotes(notesData);
+            setEnrollments([]);
+            setAssignments([]);
+          }
         }
       } catch (error) {
         if (active) {
@@ -136,7 +152,7 @@ export function NotesPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [canManageNotes]);
 
   async function reloadNotes() {
     const data = await getNotesService();
@@ -316,10 +332,12 @@ export function NotesPage() {
           </p>
         </div>
 
-        <Button onClick={openCreateDialog}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nueva nota
-        </Button>
+        {canManageNotes && (
+          <Button onClick={openCreateDialog}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nueva nota
+          </Button>
+        )}
       </div>
 
       {error && (
@@ -338,7 +356,7 @@ export function NotesPage() {
         <CardHeader>
           <CardTitle>Listado de notas</CardTitle>
           <CardDescription>
-            Consulta, edición y anulación de notas registradas.
+            Consulta de notas registradas en el sistema.
           </CardDescription>
         </CardHeader>
 
@@ -361,7 +379,9 @@ export function NotesPage() {
                     <TableHead>Nota</TableHead>
                     <TableHead>Ciclo</TableHead>
                     <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
+                    {canManageNotes && (
+                      <TableHead className="text-right">Acciones</TableHead>
+                    )}
                   </TableRow>
                 </TableHeader>
 
@@ -396,27 +416,29 @@ export function NotesPage() {
                         </Badge>
                       </TableCell>
 
-                      <TableCell className="space-x-2 text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditDialog(note)}
-                          disabled={note.estado !== "ACTIVO"}
-                        >
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Editar
-                        </Button>
+                      {canManageNotes && (
+                        <TableCell className="space-x-2 text-right">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditDialog(note)}
+                            disabled={note.estado !== "ACTIVO"}
+                          >
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Editar
+                          </Button>
 
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleAnnul(note)}
-                          disabled={note.estado !== "ACTIVO"}
-                        >
-                          <XCircle className="mr-2 h-4 w-4" />
-                          Anular
-                        </Button>
-                      </TableCell>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleAnnul(note)}
+                            disabled={note.estado !== "ACTIVO"}
+                          >
+                            <XCircle className="mr-2 h-4 w-4" />
+                            Anular
+                          </Button>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -426,160 +448,164 @@ export function NotesPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>
-              {editingNote ? "Editar nota" : "Registrar nota"}
-            </DialogTitle>
-            <DialogDescription>
-              Selecciona un alumno inscrito, una asignación docente y registra
-              la nota correspondiente.
-            </DialogDescription>
-          </DialogHeader>
+      {canManageNotes && (
+        <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>
+                {editingNote ? "Editar nota" : "Registrar nota"}
+              </DialogTitle>
+              <DialogDescription>
+                Selecciona un alumno inscrito, una asignación docente y registra
+                la nota correspondiente.
+              </DialogDescription>
+            </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Alumno</Label>
-              <Select
-                value={formData.alumnoId}
-                onValueChange={(value) => handleSelectChange("alumnoId", value)}
-              >
-                <SelectTrigger className="w-full justify-between">
-                  <span
-                    className={
-                      formData.alumnoId
-                        ? "truncate"
-                        : "truncate text-muted-foreground"
-                    }
-                  >
-                    {getStudentLabel()}
-                  </span>
-                </SelectTrigger>
-
-                <SelectContent
-                  side="bottom"
-                  align="start"
-                  sideOffset={4}
-                  className="z-9999 min-w-300px"
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Alumno</Label>
+                <Select
+                  value={formData.alumnoId}
+                  onValueChange={(value) =>
+                    handleSelectChange("alumnoId", value)
+                  }
                 >
-                  {activeEnrollments.map((enrollment) => (
-                    <SelectItem
-                      key={enrollment.id}
-                      value={String(enrollment.alumnoId)}
+                  <SelectTrigger className="w-full justify-between">
+                    <span
+                      className={
+                        formData.alumnoId
+                          ? "truncate"
+                          : "truncate text-muted-foreground"
+                      }
                     >
-                      {enrollment.alumnoCodigo} - {enrollment.alumnoNombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                      {getStudentLabel()}
+                    </span>
+                  </SelectTrigger>
 
-            <div className="space-y-2">
-              <Label>Asignatura / Profesor</Label>
-              <Select
-                value={formData.asignacionId}
-                onValueChange={(value) =>
-                  handleSelectChange("asignacionId", value)
-                }
-                disabled={!formData.alumnoId}
-              >
-                <SelectTrigger className="w-full justify-between">
-                  <span
-                    className={
-                      formData.asignacionId
-                        ? "truncate"
-                        : "truncate text-muted-foreground"
-                    }
+                  <SelectContent
+                    side="bottom"
+                    align="start"
+                    sideOffset={4}
+                    className="z-9999 min-w-300px"
                   >
-                    {getAssignmentLabel()}
-                  </span>
-                </SelectTrigger>
+                    {activeEnrollments.map((enrollment) => (
+                      <SelectItem
+                        key={enrollment.id}
+                        value={String(enrollment.alumnoId)}
+                      >
+                        {enrollment.alumnoCodigo} - {enrollment.alumnoNombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                <SelectContent
-                  side="bottom"
-                  align="start"
-                  sideOffset={4}
-                  className="z-9999 min-w-[320px]"
+              <div className="space-y-2">
+                <Label>Asignatura / Profesor</Label>
+                <Select
+                  value={formData.asignacionId}
+                  onValueChange={(value) =>
+                    handleSelectChange("asignacionId", value)
+                  }
+                  disabled={!formData.alumnoId}
                 >
-                  {filteredAssignments.map((assignment) => (
-                    <SelectItem
-                      key={assignment.id}
-                      value={String(assignment.id)}
+                  <SelectTrigger className="w-full justify-between">
+                    <span
+                      className={
+                        formData.asignacionId
+                          ? "truncate"
+                          : "truncate text-muted-foreground"
+                      }
                     >
-                      {assignment.asignaturaCodigo} -{" "}
-                      {assignment.asignaturaNombre} |{" "}
-                      {assignment.profesorNombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                      {getAssignmentLabel()}
+                    </span>
+                  </SelectTrigger>
 
-            <div className="space-y-2">
-              <Label>Unidad</Label>
-              <Select
-                value={formData.unidad}
-                onValueChange={(value) => handleSelectChange("unidad", value)}
-              >
-                <SelectTrigger className="w-full justify-between">
-                  <span
-                    className={
-                      formData.unidad
-                        ? "truncate"
-                        : "truncate text-muted-foreground"
-                    }
+                  <SelectContent
+                    side="bottom"
+                    align="start"
+                    sideOffset={4}
+                    className="z-9999 min-w-320px"
                   >
-                    {getUnitLabel()}
-                  </span>
-                </SelectTrigger>
+                    {filteredAssignments.map((assignment) => (
+                      <SelectItem
+                        key={assignment.id}
+                        value={String(assignment.id)}
+                      >
+                        {assignment.asignaturaCodigo} -{" "}
+                        {assignment.asignaturaNombre} |{" "}
+                        {assignment.profesorNombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                <SelectContent
-                  side="bottom"
-                  align="start"
-                  sideOffset={4}
-                  className="z-9999 min-w-260px"
+              <div className="space-y-2">
+                <Label>Unidad</Label>
+                <Select
+                  value={formData.unidad}
+                  onValueChange={(value) => handleSelectChange("unidad", value)}
                 >
-                  {units.map((unit) => (
-                    <SelectItem key={unit} value={unit}>
-                      {unit}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                  <SelectTrigger className="w-full justify-between">
+                    <span
+                      className={
+                        formData.unidad
+                          ? "truncate"
+                          : "truncate text-muted-foreground"
+                      }
+                    >
+                      {getUnitLabel()}
+                    </span>
+                  </SelectTrigger>
 
-            <div className="space-y-2">
-              <Label htmlFor="nota">Nota</Label>
-              <Input
-                id="nota"
-                name="nota"
-                type="number"
-                min="0"
-                max="100"
-                step="0.01"
-                value={formData.nota}
-                onChange={handleInputChange}
-                placeholder="85"
-              />
-            </div>
+                  <SelectContent
+                    side="bottom"
+                    align="start"
+                    sideOffset={4}
+                    className="z-9999 min-w-260px"
+                  >
+                    {units.map((unit) => (
+                      <SelectItem key={unit} value={unit}>
+                        {unit}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpenDialog(false)}
-              >
-                Cancelar
-              </Button>
+              <div className="space-y-2">
+                <Label htmlFor="nota">Nota</Label>
+                <Input
+                  id="nota"
+                  name="nota"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  value={formData.nota}
+                  onChange={handleInputChange}
+                  placeholder="85"
+                />
+              </div>
 
-              <Button type="submit" disabled={saving}>
-                {saving ? "Guardando..." : "Guardar"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setOpenDialog(false)}
+                >
+                  Cancelar
+                </Button>
+
+                <Button type="submit" disabled={saving}>
+                  {saving ? "Guardando..." : "Guardar"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
