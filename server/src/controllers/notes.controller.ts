@@ -74,10 +74,39 @@ async function validateNoteContext(
   };
 }
 
-export async function getNotes(_req: AuthenticatedRequest, res: Response) {
+export async function getNotes(req: AuthenticatedRequest, res: Response) {
   try {
-    const result = await pool.query(`
-      SELECT
+    const userId = req.user?.id;
+    const userRole = req.user?.rol;
+
+    if (!userId || !userRole) {
+      return res.status(401).json({
+        success: false,
+        message: "Usuario no autenticado.",
+      });
+    }
+
+    let extraJoin = "";
+    let whereClause = "";
+    const params: unknown[] = [];
+
+    if (userRole === "ALUMNO") {
+      whereClause = `WHERE al.usuario_id = $1`;
+      params.push(userId);
+    }
+
+    if (userRole === "PADRE_ENCARGADO") {
+      extraJoin = `
+        INNER JOIN alumno_encargado ae ON ae.alumno_id = al.id
+        INNER JOIN encargados e ON e.id = ae.encargado_id
+      `;
+      whereClause = `WHERE e.usuario_id = $1`;
+      params.push(userId);
+    }
+
+    const result = await pool.query(
+      `
+      SELECT DISTINCT
         n.id,
         n.alumno_id AS "alumnoId",
         al.codigo AS "alumnoCodigo",
@@ -98,8 +127,12 @@ export async function getNotes(_req: AuthenticatedRequest, res: Response) {
       INNER JOIN asignaturas a ON a.id = n.asignatura_id
       INNER JOIN profesores p ON p.id = n.profesor_id
       INNER JOIN ciclos_escolares ce ON ce.id = n.ciclo_escolar_id
+      ${extraJoin}
+      ${whereClause}
       ORDER BY n.id DESC
-    `);
+      `,
+      params,
+    );
 
     return res.json({
       success: true,

@@ -352,7 +352,7 @@ export function NotesPage() {
         </div>
       )}
 
-      <Card>
+      <Card className="w-full max-w-full overflow-hidden">
         <CardHeader>
           <CardTitle>Listado de notas</CardTitle>
           <CardDescription>
@@ -368,13 +368,15 @@ export function NotesPage() {
               No hay notas registradas.
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
+            <div className="w-full overflow-x-auto">
+              <Table className="min-w-900px">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Alumno</TableHead>
                     <TableHead>Asignatura</TableHead>
-                    <TableHead>Profesor</TableHead>
+                    <TableHead className="hidden md:table-cell">
+                      Profesor
+                    </TableHead>
                     <TableHead>Unidad</TableHead>
                     <TableHead>Nota</TableHead>
                     <TableHead>Ciclo</TableHead>
@@ -396,7 +398,9 @@ export function NotesPage() {
                         {note.asignaturaCodigo} - {note.asignaturaNombre}
                       </TableCell>
 
-                      <TableCell>{note.profesorNombre}</TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {note.profesorNombre}
+                      </TableCell>
 
                       <TableCell>{note.unidad}</TableCell>
 
