@@ -5,9 +5,10 @@ import pool from "../db/pool";
 
 export async function login(req: Request, res: Response): Promise<void> {
   try {
-    const { usuario, contrasena } = req.body;
+    const usuarioInput = String(req.body.usuario ?? "").trim();
+    const contrasenaInput = String(req.body.contrasena ?? "").trim();
 
-    if (!usuario || !contrasena) {
+    if (!usuarioInput || !contrasenaInput) {
       res.status(400).json({
         success: false,
         message: "El usuario y la contraseña son obligatorios.",
@@ -15,7 +16,7 @@ export async function login(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const result = await pool.query(
+    const userResult = await pool.query(
       `
       SELECT
         u.id,
@@ -26,36 +27,40 @@ export async function login(req: Request, res: Response): Promise<void> {
         r.nombre AS rol
       FROM usuarios u
       INNER JOIN roles r ON r.id = u.rol_id
-      WHERE u.nombre_usuario = $1 OR u.correo = $1
+      WHERE LOWER(TRIM(u.nombre_usuario)) = LOWER($1)
+         OR LOWER(TRIM(u.correo)) = LOWER($1)
       LIMIT 1
       `,
-      [usuario],
+      [usuarioInput],
     );
 
-    if (!result.rowCount) {
+    if (userResult.rowCount === 0) {
       res.status(401).json({
         success: false,
-        message: "Credenciales incorrectas.",
+        message: "Usuario o contraseña incorrectos.",
       });
       return;
     }
 
-    const user = result.rows[0];
+    const user = userResult.rows[0];
 
     if (user.estado !== "ACTIVO") {
       res.status(403).json({
         success: false,
-        message: "El usuario no se encuentra activo.",
+        message: "El usuario está inactivo.",
       });
       return;
     }
 
-    const passwordValido = await bcrypt.compare(contrasena, user.contrasena);
+    const passwordValido = await bcrypt.compare(
+      contrasenaInput,
+      user.contrasena,
+    );
 
     if (!passwordValido) {
       res.status(401).json({
         success: false,
-        message: "Credenciales incorrectas.",
+        message: "Usuario o contraseña incorrectos.",
       });
       return;
     }

@@ -4,17 +4,21 @@ import { apiRequest } from "./api";
 const TOKEN_KEY = "sistema_colegio_token";
 const USER_KEY = "sistema_colegio_user";
 
-export async function loginService(
-  credentials: LoginRequest,
-): Promise<LoginResponse> {
+export async function loginService(credentials: LoginRequest) {
   const response = await apiRequest<LoginResponse>("/auth/login", {
     method: "POST",
-    body: JSON.stringify(credentials),
+    body: JSON.stringify({
+      usuario: credentials.usuario.trim(),
+      contrasena: credentials.contrasena.trim(),
+    }),
   });
 
-  if (response.success && response.data) {
-    localStorage.setItem(TOKEN_KEY, response.data.token);
-    localStorage.setItem(USER_KEY, JSON.stringify(response.data.user));
+  if (response.data) {
+    localStorage.setItem("sistema_colegio_token", response.data.token);
+    localStorage.setItem(
+      "sistema_colegio_user",
+      JSON.stringify(response.data.user),
+    );
   }
 
   return response;
